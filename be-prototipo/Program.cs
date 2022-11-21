@@ -1,3 +1,6 @@
+using be_prototipo;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +10,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+string mySqlConnection = builder.Configuration.GetConnectionString("CommentsConnetionString");
+builder.Services.AddEntityFrameworkMySql().AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection), null);
+});
+
+
+builder.Services.AddCors((setup) => //Quitar bloqueo de politicas CORS
+{
+    setup.AddPolicy("default", (options) =>
+    {
+        options.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();
+    });
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -15,6 +34,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("default");
 
 app.UseHttpsRedirection();
 

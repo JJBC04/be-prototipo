@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using be_prototipo.Models;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -6,8 +7,14 @@ namespace be_prototipo.Controllers
 {
     [Route("api/User")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : Controller
     {
+        private readonly ApplicationDbContext _context;//Inyeccion de dependencias del contexto
+        public UserController(ApplicationDbContext context)
+        {
+            this._context= context;
+        }
+
         // GET: api/<UserController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -24,8 +31,18 @@ namespace be_prototipo.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> AddUser([FromBody] User user)
         {
+            try
+            {
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            }
+            catch(Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         // PUT api/<UserController>/5
